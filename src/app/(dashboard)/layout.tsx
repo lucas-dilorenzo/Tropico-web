@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
@@ -8,13 +9,14 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const adminClient = createAdminClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile } = await adminClient
     .from("users")
-    .select("nombre_apellido, role")
+    .select("nombre, apellido, role")
     .eq("id", user.id)
     .single();
 
@@ -38,15 +40,22 @@ export default async function DashboardLayout({
               Mi perfil
             </Link>
             {isAdmin && (
-              <Link href="/admin" className="text-gray-600 hover:text-gray-900 font-medium">
-                Admin
-              </Link>
+              <>
+                <Link href="/admin" className="text-gray-600 hover:text-gray-900 font-medium">
+                  Admin
+                </Link>
+                <Link href="/admin/socios" className="text-gray-600 hover:text-gray-900 font-medium">
+                  Socios
+                </Link>
+              </>
             )}
           </div>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-500">
-            {profile?.nombre_apellido || user.email}
+            {profile?.nombre && profile?.apellido
+              ? `${profile.nombre} ${profile.apellido}`
+              : user.email}
           </span>
           <form action="/logout" method="POST">
             <button
