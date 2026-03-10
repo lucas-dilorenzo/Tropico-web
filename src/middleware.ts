@@ -29,21 +29,44 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const publicPaths = ["/login", "/recuperar-clave", "/primer-acceso", "/auth/callback"];
+  const publicPaths = [
+    "/login",
+    "/recuperar-clave",
+    "/primer-acceso",
+    "/establecer-clave",
+    "/auth/callback",
+  ];
   const isPublicPath = publicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
 
+  // Not authenticated → redirect to login
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
+  // Authenticated → redirect away from login
   if (user && request.nextUrl.pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/inicio";
     return NextResponse.redirect(url);
+  }
+
+  // Admin route protection
+  if (user && request.nextUrl.pathname.startsWith("/admin")) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/inicio";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
