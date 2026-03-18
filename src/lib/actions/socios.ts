@@ -94,7 +94,7 @@ export async function crearSocio(formData: FormData) {
       .maybeSingle();
 
     if (existingDni) {
-      return { error: `El DNI ${dni} ya está registrado en otro socio` };
+      return { error: "El DNI ingresado ya está registrado en otro socio" };
     }
   }
 
@@ -221,7 +221,7 @@ export async function editarSocio(userId: string, formData: FormData) {
       .maybeSingle();
 
     if (existingDni) {
-      return { error: `El DNI ${dni} ya está registrado en otro socio` };
+      return { error: "El DNI ingresado ya está registrado en otro socio" };
     }
   }
 
