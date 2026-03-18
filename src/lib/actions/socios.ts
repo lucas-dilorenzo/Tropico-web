@@ -27,7 +27,9 @@ export async function crearSocio(formData: FormData) {
   const numero_socio = formData.get("numero_socio") as string;
   const telefono = formData.get("telefono") as string;
   const fecha_ingreso = formData.get("fecha_ingreso") as string;
-  const estado = formData.get("estado") as string;
+  const estadoRaw = formData.get("estado") as string;
+  const estadoCustom = formData.get("estadoCustom") as string;
+  const estado = estadoRaw === "Otro" ? estadoCustom : estadoRaw;
 
   // Admin-only fields
   const notas = formData.get("notas") as string;
@@ -42,7 +44,20 @@ export async function crearSocio(formData: FormData) {
     return { error: "El email es obligatorio" };
   }
 
-  // Create auth user with invite (sends magic link)
+  // Verificar DNI único
+  if (dni) {
+    const { data: existingDni } = await adminClient
+      .from("users")
+      .select("id")
+      .eq("dni", dni)
+      .maybeSingle();
+
+    if (existingDni) {
+      return { error: `El DNI ${dni} ya está registrado en otro socio` };
+    }
+  }
+
+  // Create auth user without sending email
   const { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
     email,
     email_confirm: false,
@@ -50,7 +65,7 @@ export async function crearSocio(formData: FormData) {
   });
 
   if (authError) {
-    return { error: `Error creando usuario: ${authError.message}` };
+    return { error: `Error creando usuario: ${authError.message || JSON.stringify(authError)}` };
   }
 
   // Update public.users (trigger already created the row)
@@ -90,14 +105,20 @@ export async function crearSocio(formData: FormData) {
     return { error: `Error creando datos admin: ${adminDataError.message}` };
   }
 
-  // Send magic link for first access
-  await adminClient.auth.admin.generateLink({
-    type: "magiclink",
+  // Generate invite link for admin to share manually
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+    type: "invite",
     email,
-    options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback?next=/establecer-clave` },
+    options: { redirectTo: `${siteUrl}/establecer-clave` },
   });
 
-  redirect("/admin/socios");
+  if (linkError) {
+    // Socio fue creado igual, solo falló la generación del link
+    return { success: true, inviteLink: null };
+  }
+
+  return { success: true, inviteLink: linkData.properties.action_link };
 }
 
 export async function editarSocio(userId: string, formData: FormData) {
@@ -121,7 +142,9 @@ export async function editarSocio(userId: string, formData: FormData) {
   const numero_socio = formData.get("numero_socio") as string;
   const telefono = formData.get("telefono") as string;
   const fecha_ingreso = formData.get("fecha_ingreso") as string;
-  const estado = formData.get("estado") as string;
+  const estadoRaw = formData.get("estado") as string;
+  const estadoCustom = formData.get("estadoCustom") as string;
+  const estado = estadoRaw === "Otro" ? estadoCustom : estadoRaw;
   const activo = formData.get("activo") === "true";
 
   const notas = formData.get("notas") as string;
@@ -131,6 +154,20 @@ export async function editarSocio(userId: string, formData: FormData) {
   const fecha_vinculacion = formData.get("fecha_vinculacion") as string;
   const medico = formData.get("medico") as string;
   const observaciones = formData.get("observaciones") as string;
+
+  // Verificar DNI único (excluyendo el socio actual)
+  if (dni) {
+    const { data: existingDni } = await adminClient
+      .from("users")
+      .select("id")
+      .eq("dni", dni)
+      .neq("id", userId)
+      .maybeSingle();
+
+    if (existingDni) {
+      return { error: `El DNI ${dni} ya está registrado en otro socio` };
+    }
+  }
 
   const { error: updateError } = await adminClient
     .from("users")
@@ -168,7 +205,7 @@ export async function editarSocio(userId: string, formData: FormData) {
     return { error: `Error actualizando datos admin: ${adminDataError.message}` };
   }
 
-  redirect("/admin/socios");
+  return { success: true };
 }
 
 export async function toggleActivoSocio(userId: string, activo: boolean) {
@@ -224,15 +261,16 @@ export async function resetearClave(userId: string) {
     return { error: "Usuario no encontrado" };
   }
 
-  const { error } = await adminClient.auth.admin.generateLink({
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { data: linkData, error } = await adminClient.auth.admin.generateLink({
     type: "recovery",
     email: targetUser.email,
-    options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback?next=/establecer-clave` },
+    options: { redirectTo: `${siteUrl}/establecer-clave` },
   });
 
   if (error) {
     return { error: error.message };
   }
 
-  return { success: true };
+  return { success: true, resetLink: linkData.properties.action_link };
 }

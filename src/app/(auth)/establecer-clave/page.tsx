@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -9,8 +9,48 @@ export default function EstablecerClavePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [linkError, setLinkError] = useState("");
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    async function initSession() {
+      const hash = window.location.hash;
+      if (hash) {
+        const params = new URLSearchParams(hash.substring(1));
+
+        // Detectar error en el hash (ej: link expirado o ya usado)
+        const error_code = params.get("error_code");
+        if (error_code) {
+          const desc = params.get("error_description")?.replace(/\+/g, " ") ?? "El link es inválido o ya fue utilizado.";
+          window.history.replaceState(null, "", window.location.pathname);
+          setLinkError(desc);
+          return;
+        }
+
+        // Leer tokens del hash (flujo implícito de invitación)
+        const access_token = params.get("access_token");
+        const refresh_token = params.get("refresh_token");
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          window.history.replaceState(null, "", window.location.pathname);
+          if (error) {
+            setLinkError("No se pudo iniciar la sesión. Solicitá un nuevo link al administrador.");
+            return;
+          }
+          setSessionReady(true);
+          return;
+        }
+      }
+      // Sin hash: verificar si ya hay sesión activa
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) setSessionReady(true);
+      else setLinkError("No se encontró una sesión válida. Solicitá un nuevo link al administrador.");
+    }
+
+    initSession();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +78,25 @@ export default function EstablecerClavePage() {
 
     router.push("/inicio");
     router.refresh();
+  }
+
+  if (linkError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow text-center space-y-3">
+          <p className="text-red-600 font-medium">Link inválido o expirado</p>
+          <p className="text-gray-500 text-sm">{linkError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <p className="text-gray-500 text-sm">Verificando sesión...</p>
+      </div>
+    );
   }
 
   return (
