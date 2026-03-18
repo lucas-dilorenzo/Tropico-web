@@ -24,10 +24,10 @@ async function verificarAdmin() {
 
 async function subirImagen(
   adminClient: ReturnType<typeof createAdminClient>,
-  archivo: File,
+  archivo: File | null,
   prefijo: string
 ): Promise<{ url: string | null; error?: string }> {
-  if (archivo.size === 0) return { url: null };
+  if (!archivo || archivo.size === 0) return { url: null };
   const ext = archivo.name.split(".").pop();
   const fileName = `${prefijo}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await adminClient.storage.from("catalogo").upload(fileName, archivo);
@@ -41,7 +41,7 @@ async function subirFotos(
   archivos: File[]
 ): Promise<{ urls: string[]; error?: string }> {
   const urls: string[] = [];
-  for (const archivo of archivos) {
+  for (const archivo of archivos.filter(Boolean)) {
     const { url, error } = await subirImagen(adminClient, archivo, "prod");
     if (error) return { urls: [], error };
     if (url) urls.push(url);
