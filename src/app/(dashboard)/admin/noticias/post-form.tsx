@@ -42,13 +42,16 @@ export default function PostForm({ action, post }: Props) {
       const result = await action(formData);
       if (result.error) {
         setError(result.error);
-        setLoading(false);
       } else {
         router.push("/admin/noticias");
-        router.refresh();
       }
-    } catch {
-      setError("Error inesperado");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // NEXT_REDIRECT no es un error real, ignorar
+      if (!msg.includes("NEXT_REDIRECT")) {
+        setError(`Error inesperado: ${msg}`);
+      }
+    } finally {
       setLoading(false);
     }
   }
