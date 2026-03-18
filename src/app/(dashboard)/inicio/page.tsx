@@ -54,6 +54,11 @@ export default async function InicioPage() {
             <p className="font-medium text-sm">Noticias</p>
             <p className="text-xs text-gray-500 mt-0.5">Publicar contenido</p>
           </Link>
+          <div className="bg-white border rounded-lg p-5 opacity-50 cursor-not-allowed">
+            <p className="text-2xl mb-2">🛒</p>
+            <p className="font-medium text-sm">Catálogo</p>
+            <p className="text-xs text-gray-500 mt-0.5">Próximamente</p>
+          </div>
         </div>
       </div>
     );
