@@ -200,6 +200,11 @@ export async function editarSocio(userId: string, formData: FormData) {
     return { error: `Error actualizando socio: ${updateError.message}` };
   }
 
+  // Sincronizar user_metadata en auth.users
+  await adminClient.auth.admin.updateUserById(userId, {
+    user_metadata: { nombre, apellido },
+  });
+
   // Upsert admin data
   const { error: adminDataError } = await adminClient
     .from("users_admin_data")
