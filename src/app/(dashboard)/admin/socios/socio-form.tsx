@@ -287,12 +287,12 @@ export default function SocioForm({ action, defaultValues = {}, isEdit = false }
 
         <div>
           <label htmlFor="notas" className={labelClass}>Notas</label>
-          <textarea id="notas" name="notas" rows={3} defaultValue={defaultValues.notas} className={inputClass} />
+          <textarea id="notas" name="notas" rows={3} maxLength={2000} defaultValue={defaultValues.notas} className={inputClass} />
         </div>
 
         <div>
           <label htmlFor="observaciones" className={labelClass}>Observaciones</label>
-          <textarea id="observaciones" name="observaciones" rows={3} defaultValue={defaultValues.observaciones} className={inputClass} />
+          <textarea id="observaciones" name="observaciones" rows={3} maxLength={2000} defaultValue={defaultValues.observaciones} className={inputClass} />
         </div>
       </fieldset>
 
