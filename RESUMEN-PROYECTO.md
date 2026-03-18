@@ -4,29 +4,36 @@
 
 ### Autenticación
 - Login con email + contraseña
-- Recuperar contraseña (envía email via Supabase)
+- Recuperar contraseña (genera link copiable)
 - Establecer contraseña (primer acceso y recovery)
 - Logout
 - Protección de rutas (público vs autenticado vs admin)
 
 ### Panel de Admin - ABM Socios
-- Listado de socios con filtros (búsqueda por nombre/apellido/email/nro. socio + estado activo/inactivo)
-- Crear socio (datos personales + datos administrativos/sensibles)
+- Listado de socios con filtros en tiempo real (búsqueda por nombre/apellido/email/nro. socio + estado)
+- Ordenamiento por columna (nombre, nro. socio, estado, activo)
+- Paginación de 25 registros con ventana de páginas
+- Crear socio con validaciones server-side completas (campos obligatorios, formato email, DNI/teléfono numéricos, DNI único, límites de longitud)
+- Email con selector de dominio predefinido + opción "otro"
+- Estado con valores predefinidos (enum) + opción "otro" libre
+- Generar link de invitación copiable al crear socio
 - Editar socio
 - Dar de baja / reactivar (soft delete)
-- Resetear contraseña de un socio
+- Generar link de reseteo de contraseña copiable desde el listado
 
 ### Infraestructura
 - Next.js + TypeScript + Tailwind CSS
 - Supabase (Auth + DB con RLS)
 - Middleware con refresh de sesión y control de roles
 - 6 tablas con índices, triggers y Row Level Security
+- Validaciones server-side en todas las acciones
+- Rollback automático en caso de fallo al crear socio
+- Constantes compartidas (estados de socios)
 
-## Lo que falta (según la spec)
+## Lo que falta
 
 | Paso | Tarea | Estado |
 |------|-------|--------|
-| 3 | ABM Socios - envío de magic link al crear socio | Parcial (genera link pero no envía email automáticamente) |
 | 4 | Contenido/Noticias - CRUD posts con fotos y video YouTube + etiqueta "Nuevo" por socio | Pendiente |
 | 5 | Catálogo - ABM categorías + ABM productos con fotos | Pendiente |
 | 6 | Perfil del socio - ver y editar (nombre, apellido, teléfono, email, contraseña) | Pendiente |
@@ -48,9 +55,11 @@ src/
 │   │   └── admin/
 │   │       ├── page.tsx            (panel principal)
 │   │       └── socios/
-│   │           ├── page.tsx        (listado con filtros)
-│   │           ├── socio-form.tsx  (formulario compartido)
-│   │           ├── socio-row.tsx   (fila de tabla)
+│   │           ├── page.tsx        (listado con filtros, orden y paginación)
+│   │           ├── socio-form.tsx  (formulario compartido crear/editar)
+│   │           ├── socio-row.tsx   (fila de tabla con acciones)
+│   │           ├── socios-filtros.tsx (filtros en tiempo real)
+│   │           ├── socios-th.tsx   (headers ordenables)
 │   │           ├── nuevo/page.tsx  (crear socio)
 │   │           └── [id]/editar/page.tsx (editar socio)
 │   └── auth/callback/route.ts     (magic link y recovery)
@@ -59,8 +68,9 @@ src/
 │   │   ├── client.ts   (browser)
 │   │   ├── server.ts   (server components)
 │   │   └── admin.ts    (service role)
-│   └── actions/
-│       └── socios.ts   (server actions CRUD)
+│   ├── actions/
+│   │   └── socios.ts   (server actions CRUD)
+│   └── constants.ts    (ESTADOS_SOCIO y otros valores compartidos)
 ├── middleware.ts
 supabase/
 └── migrations/
@@ -68,6 +78,7 @@ supabase/
     └── 00002_split_nombre_apellido.sql
 scripts/
 ├── seed-admin.ts
+├── seed-socios.ts
 └── check-admin.ts
 ```
 
