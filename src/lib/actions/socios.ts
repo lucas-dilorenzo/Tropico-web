@@ -244,9 +244,13 @@ export async function editarSocio(userId: string, formData: FormData) {
   }
 
   // Sincronizar user_metadata en auth.users
-  await adminClient.auth.admin.updateUserById(userId, {
+  const { error: authUpdateError } = await adminClient.auth.admin.updateUserById(userId, {
     user_metadata: { nombre, apellido },
   });
+
+  if (authUpdateError) {
+    console.error("Error sincronizando user_metadata:", authUpdateError);
+  }
 
   // Upsert admin data
   const { error: adminDataError } = await adminClient
