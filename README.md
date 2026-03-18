@@ -1,3 +1,6 @@
+
+<img width="961" height="259" alt="tropico" src="https://github.com/user-attachments/assets/d369d560-38bd-4957-ae54-b81b50cd7163" />
+
 # Trópico Web
 
 > Plataforma de gestión para cooperativas y organizaciones de socios.
