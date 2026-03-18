@@ -34,6 +34,7 @@ export default function SociosFiltros({
     const params = new URLSearchParams(searchParams.toString());
     if (newQ) params.set("q", newQ); else params.delete("q");
     if (newEstado) params.set("estado", newEstado); else params.delete("estado");
+    params.delete("pagina");
     router.push(`${pathname}?${params.toString()}`);
   }
 

@@ -18,6 +18,9 @@ export default async function SociosPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: profile } = await adminClient.from("users").select("role").eq("id", user.id).single();
+  if (profile?.role !== "admin") redirect("/inicio");
+
   const PAGE_SIZE = 25;
   const pagina = Math.max(1, parseInt(params.pagina ?? "1"));
   const desde = (pagina - 1) * PAGE_SIZE;
@@ -33,8 +36,12 @@ export default async function SociosPage({
     .range(desde, desde + PAGE_SIZE - 1);
 
   if (params.q) {
-    const search = `%${params.q}%`;
-    query = query.or(`nombre.ilike.${search},apellido.ilike.${search},email.ilike.${search},numero_socio.ilike.${search}`);
+    // Sanitizar input: solo letras, números, espacios, @ y . (evita romper sintaxis PostgREST)
+    const sanitized = params.q.replace(/[^a-zA-Z0-9\s@.áéíóúüñÁÉÍÓÚÜÑ]/g, "");
+    if (sanitized) {
+      const search = `%${sanitized}%`;
+      query = query.or(`nombre.ilike.${search},apellido.ilike.${search},email.ilike.${search},numero_socio.ilike.${search}`);
+    }
   }
 
   if (params.estado) {
@@ -101,6 +108,8 @@ export default async function SociosPage({
               const sp = new URLSearchParams();
               if (params.q) sp.set("q", params.q);
               if (params.estado) sp.set("estado", params.estado);
+              if (params.sortBy) sp.set("sortBy", params.sortBy);
+              if (params.sortDir) sp.set("sortDir", params.sortDir);
               sp.set("pagina", String(p));
               return (
                 <Link

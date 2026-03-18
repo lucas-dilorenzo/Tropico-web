@@ -250,21 +250,17 @@ export async function resetearClave(userId: string) {
 
   if (profile?.role !== "admin") redirect("/inicio");
 
-  // Get the user's email
-  const { data: targetUser } = await adminClient
-    .from("users")
-    .select("email")
-    .eq("id", userId)
-    .single();
+  // Obtener email desde auth.users (fuente de verdad)
+  const { data: targetAuthUser, error: getUserError } = await adminClient.auth.admin.getUserById(userId);
 
-  if (!targetUser) {
+  if (getUserError || !targetAuthUser.user) {
     return { error: "Usuario no encontrado" };
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { data: linkData, error } = await adminClient.auth.admin.generateLink({
     type: "recovery",
-    email: targetUser.email,
+    email: targetAuthUser.user.email!,
     options: { redirectTo: `${siteUrl}/establecer-clave` },
   });
 
