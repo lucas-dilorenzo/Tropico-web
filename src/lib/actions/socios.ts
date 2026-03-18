@@ -40,9 +40,13 @@ export async function crearSocio(formData: FormData) {
   const medico = formData.get("medico") as string;
   const observaciones = formData.get("observaciones") as string;
 
-  if (!email) {
-    return { error: "El email es obligatorio" };
-  }
+  if (!email) return { error: "El email es obligatorio" };
+  if (!nombre) return { error: "El nombre es obligatorio" };
+  if (!apellido) return { error: "El apellido es obligatorio" };
+  if (!dni) return { error: "El DNI es obligatorio" };
+  if (!telefono) return { error: "El teléfono es obligatorio" };
+  if (!/^\d+$/.test(dni)) return { error: "El DNI debe contener solo números" };
+  if (!/^\d+$/.test(telefono)) return { error: "El teléfono debe contener solo números" };
 
   // Verificar DNI único
   if (dni) {
