@@ -1,29 +1,16 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 
 export default async function InicioPage() {
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: posts }, { data: reads }] = await Promise.all([
-    supabase
-      .from("posts")
-      .select("id, titulo, contenido, fotos, video_url, created_at")
-      .order("created_at", { ascending: false })
-      .limit(5),
-    supabase
-      .from("post_reads")
-      .select("post_id")
-      .eq("user_id", user.id),
-  ]);
-
-  const leidos = new Set((reads ?? []).map((r) => r.post_id));
-  const noLeidos = (posts ?? []).filter((p) => !leidos.has(p.id)).length;
-
-  const { data: profile } = await supabase
+  const { data: profile } = await adminClient
     .from("users")
     .select("nombre, role")
     .eq("id", user.id)
@@ -64,13 +51,27 @@ export default async function InicioPage() {
     );
   }
 
+  const [{ data: posts }, { data: reads }] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("id, titulo, contenido, fotos, video_url, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("post_reads")
+      .select("post_id")
+      .eq("user_id", user.id),
+  ]);
+
+  const leidos = new Set((reads ?? []).map((r) => r.post_id));
+  const noLeidos = (posts ?? []).filter((p) => !leidos.has(p.id)).length;
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold">Bienvenido</h1>
       </div>
 
-      {/* Noticias */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
