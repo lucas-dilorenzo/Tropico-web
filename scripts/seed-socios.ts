@@ -69,7 +69,7 @@ async function main() {
       continue;
     }
 
-    await supabase.from("users").update({
+    const { error: updateError } = await supabase.from("users").update({
       nombre,
       apellido,
       dni: randDni(),
@@ -80,11 +80,23 @@ async function main() {
       activo,
     }).eq("id", authUser.user.id);
 
-    await supabase.from("users_admin_data").insert({
+    if (updateError) {
+      console.error(`  ✗ Error actualizando perfil de ${email}: ${updateError.message}`);
+      await supabase.auth.admin.deleteUser(authUser.user.id);
+      continue;
+    }
+
+    const { error: insertError } = await supabase.from("users_admin_data").insert({
       user_id: authUser.user.id,
       medico: rand(MEDICOS),
       notas: Math.random() > 0.5 ? `Notas de prueba para ${nombre} ${apellido}` : null,
     });
+
+    if (insertError) {
+      console.error(`  ✗ Error creando datos admin de ${email}: ${insertError.message}`);
+      await supabase.auth.admin.deleteUser(authUser.user.id);
+      continue;
+    }
 
     console.log(`  ✓ [${i}/${TOTAL}] ${nombre} ${apellido} — ${estado}`);
   }
