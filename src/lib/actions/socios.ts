@@ -72,22 +72,30 @@ export async function crearSocio(formData: FormData) {
     return { error: `Error creando usuario: ${authError.message || JSON.stringify(authError)}` };
   }
 
+  const authUserId = authUser.user.id;
+
+  // Helper para limpiar el usuario auth si algo falla después de crearlo
+  async function rollback() {
+    await adminClient.auth.admin.deleteUser(authUserId);
+  }
+
   // Update public.users (trigger already created the row)
   const { error: updateError } = await adminClient
     .from("users")
     .update({
-      nombre: nombre || "",
-      apellido: apellido || "",
-      dni: dni || null,
+      nombre,
+      apellido,
+      dni,
       numero_socio: numero_socio || null,
-      telefono: telefono || null,
+      telefono,
       fecha_ingreso: fecha_ingreso || null,
-      estado: estado || "pendiente",
+      estado: estado || "En trámite",
       activo: true,
     })
-    .eq("id", authUser.user.id);
+    .eq("id", authUserId);
 
   if (updateError) {
+    await rollback();
     return { error: `Error actualizando perfil: ${updateError.message}` };
   }
 
@@ -95,7 +103,7 @@ export async function crearSocio(formData: FormData) {
   const { error: adminDataError } = await adminClient
     .from("users_admin_data")
     .insert({
-      user_id: authUser.user.id,
+      user_id: authUserId,
       notas: notas || null,
       numero_tramite: numero_tramite || null,
       diagnostico: diagnostico || null,
@@ -106,6 +114,7 @@ export async function crearSocio(formData: FormData) {
     });
 
   if (adminDataError) {
+    await rollback();
     return { error: `Error creando datos admin: ${adminDataError.message}` };
   }
 
