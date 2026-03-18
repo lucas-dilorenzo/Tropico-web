@@ -33,9 +33,11 @@ export default async function DashboardLayout({
             <Link href="/inicio" className="text-gray-600 hover:text-gray-900">
               Inicio
             </Link>
-            <Link href="/catalogo" className="text-gray-600 hover:text-gray-900">
-              Catálogo
-            </Link>
+            {!isAdmin && (
+              <Link href="/catalogo" className="text-gray-600 hover:text-gray-900">
+                Catálogo
+              </Link>
+            )}
             <Link href="/perfil" className="text-gray-600 hover:text-gray-900">
               Mi perfil
             </Link>
@@ -46,6 +48,9 @@ export default async function DashboardLayout({
                 </Link>
                 <Link href="/admin/noticias" className="text-gray-600 hover:text-gray-900 font-medium">
                   Noticias
+                </Link>
+                <Link href="/admin/catalogo" className="text-gray-600 hover:text-gray-900 font-medium">
+                  Catálogo
                 </Link>
               </>
             )}
