@@ -47,7 +47,6 @@ export default function CategoriaForm({ action, categoria }: Props) {
         setError(result.error);
       } else {
         router.push("/admin/catalogo");
-        router.refresh();
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

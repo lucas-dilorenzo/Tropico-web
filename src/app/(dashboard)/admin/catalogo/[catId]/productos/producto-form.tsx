@@ -45,7 +45,6 @@ export default function ProductoForm({ action, producto, backUrl }: Props) {
         setError(result.error);
       } else {
         router.push(backUrl);
-        router.refresh();
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
