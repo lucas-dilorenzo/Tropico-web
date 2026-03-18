@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 
 export default async function NoticiasPage() {
@@ -21,11 +22,29 @@ export default async function NoticiasPage() {
 
   if (postsError) console.error("[noticias] error fetching posts:", postsError);
 
+  const adminClient = createAdminClient();
+  const { data: profile } = await adminClient
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const isAdmin = profile?.role === "admin";
+
   const leidos = new Set((reads ?? []).map((r) => r.post_id));
+
+  const backButton = isAdmin && (
+    <Link
+      href="/admin/noticias"
+      className="text-sm text-blue-600 hover:text-blue-800 mb-4 inline-block"
+    >
+      ← Volver al panel
+    </Link>
+  );
 
   if (!posts?.length) {
     return (
       <div className="max-w-3xl mx-auto">
+        {backButton}
         <h1 className="text-xl font-semibold mb-6">Noticias</h1>
         <p className="text-gray-500 text-sm">No hay noticias publicadas todavía.</p>
       </div>
@@ -36,6 +55,7 @@ export default async function NoticiasPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
+      {backButton}
       <h1 className="text-xl font-semibold mb-6">Noticias</h1>
 
       {/* Noticia destacada (la más reciente) */}
