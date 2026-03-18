@@ -15,6 +15,8 @@ export default function EstablecerClavePage() {
   const supabase = createClient();
 
   useEffect(() => {
+    let mounted = true;
+
     async function initSession() {
       const hash = window.location.hash;
       if (hash) {
@@ -25,7 +27,7 @@ export default function EstablecerClavePage() {
         if (error_code) {
           const desc = params.get("error_description")?.replace(/\+/g, " ") ?? "El link es inválido o ya fue utilizado.";
           window.history.replaceState(null, "", window.location.pathname);
-          setLinkError(desc);
+          if (mounted) setLinkError(desc);
           return;
         }
 
@@ -35,6 +37,7 @@ export default function EstablecerClavePage() {
         if (access_token && refresh_token) {
           const { error } = await supabase.auth.setSession({ access_token, refresh_token });
           window.history.replaceState(null, "", window.location.pathname);
+          if (!mounted) return;
           if (error) {
             setLinkError("No se pudo iniciar la sesión. Solicitá un nuevo link al administrador.");
             return;
@@ -45,11 +48,13 @@ export default function EstablecerClavePage() {
       }
       // Sin hash: verificar si ya hay sesión activa
       const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       if (session) setSessionReady(true);
       else setLinkError("No se encontró una sesión válida. Solicitá un nuevo link al administrador.");
     }
 
     initSession();
+    return () => { mounted = false; };
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
