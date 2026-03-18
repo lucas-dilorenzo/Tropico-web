@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect, notFound } from "next/navigation";
 import MarcarLeido from "./marcar-leido";
 
@@ -27,6 +28,14 @@ export default async function NoticiaDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const adminClient = createAdminClient();
+  const { data: profile } = await adminClient
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const isAdmin = profile?.role === "admin";
+
   const { data: post } = await supabase
     .from("posts")
     .select("id, titulo, contenido, fotos, video_url, created_at")
@@ -39,13 +48,19 @@ export default async function NoticiaDetailPage({
 
   return (
     <div className="max-w-3xl mx-auto">
-      <MarcarLeido postId={post.id} />
+      {!isAdmin && <MarcarLeido postId={post.id} />}
+
+      {isAdmin && (
+        <div className="mb-4 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700 inline-block">
+          Vista previa — los socios ven esta página
+        </div>
+      )}
 
       <Link
-        href="/noticias"
+        href={isAdmin ? "/admin/noticias" : "/noticias"}
         className="text-sm text-blue-600 hover:text-blue-800 mb-6 inline-block"
       >
-        ← Volver a noticias
+        ← Volver{isAdmin ? " al panel" : " a noticias"}
       </Link>
 
       <article>

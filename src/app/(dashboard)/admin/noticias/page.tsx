@@ -28,12 +28,20 @@ export default async function AdminNoticiasPage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold">Noticias</h1>
-        <Link
-          href="/admin/noticias/nueva"
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
-        >
-          + Nueva noticia
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/noticias"
+            className="border border-gray-300 px-4 py-2 rounded text-sm hover:bg-gray-50 text-gray-600"
+          >
+            Vista previa
+          </Link>
+          <Link
+            href="/admin/noticias/nueva"
+            className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+          >
+            + Nueva noticia
+          </Link>
+        </div>
       </div>
 
       {!posts?.length ? (
@@ -57,6 +65,12 @@ export default async function AdminNoticiasPage() {
                 </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
+                <Link
+                  href={`/noticias/${post.id}`}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Preview
+                </Link>
                 <Link
                   href={`/admin/noticias/${post.id}/editar`}
                   className="text-sm text-blue-600 hover:text-blue-800"
