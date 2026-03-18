@@ -77,6 +77,7 @@ export async function crearSocio(formData: FormData) {
   const observaciones = trim(formData.get("observaciones") as string);
 
   if (!email) return { error: "El email es obligatorio" };
+  if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email)) return { error: "El formato del email no es válido" };
   if (notas.length > LIMITS.notas) return { error: `Las notas no pueden superar ${LIMITS.notas} caracteres` };
   if (observaciones.length > LIMITS.observaciones) return { error: `Las observaciones no pueden superar ${LIMITS.observaciones} caracteres` };
   if (diagnostico.length > LIMITS.diagnostico) return { error: `El diagnóstico no puede superar ${LIMITS.diagnostico} caracteres` };
