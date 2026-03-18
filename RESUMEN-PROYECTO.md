@@ -85,3 +85,4 @@ scripts/
 ## Datos de acceso (desarrollo)
 - URL: http://localhost:3000
 - Admin: admin@tropico.test / admin123
+- Socio test: socio@tropico.test / socio123

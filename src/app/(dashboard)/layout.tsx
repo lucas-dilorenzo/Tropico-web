@@ -41,11 +41,11 @@ export default async function DashboardLayout({
             </Link>
             {isAdmin && (
               <>
-                <Link href="/admin" className="text-gray-600 hover:text-gray-900 font-medium">
-                  Admin
-                </Link>
                 <Link href="/admin/socios" className="text-gray-600 hover:text-gray-900 font-medium">
                   Socios
+                </Link>
+                <Link href="/admin/noticias" className="text-gray-600 hover:text-gray-900 font-medium">
+                  Noticias
                 </Link>
               </>
             )}

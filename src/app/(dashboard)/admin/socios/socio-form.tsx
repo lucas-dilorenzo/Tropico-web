@@ -25,7 +25,7 @@ interface SocioData {
 }
 
 interface SocioFormProps {
-  action: (formData: FormData) => Promise<{ error: string } | { success: true; inviteLink?: string | null }>;
+  action: (formData: FormData) => Promise<{ error: string } | { success: boolean; inviteLink?: string | null; linkWarning?: string | null }>;
   defaultValues?: SocioData;
   isEdit?: boolean;
 }
