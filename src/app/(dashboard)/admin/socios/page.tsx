@@ -103,28 +103,36 @@ export default async function SociosPage({
       {totalPaginas > 1 && (
         <div className="flex items-center justify-between text-sm text-gray-600">
           <p>{count} socios encontrados</p>
-          <div className="flex gap-1">
-            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => {
-              const sp = new URLSearchParams();
-              if (params.q) sp.set("q", params.q);
-              if (params.estado) sp.set("estado", params.estado);
-              if (params.sortBy) sp.set("sortBy", params.sortBy);
-              if (params.sortDir) sp.set("sortDir", params.sortDir);
-              sp.set("pagina", String(p));
-              return (
-                <Link
-                  key={p}
-                  href={`/admin/socios?${sp.toString()}`}
-                  className={`px-3 py-1 rounded-md border text-sm ${
-                    p === pagina
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {p}
-                </Link>
+          <div className="flex gap-1 items-center">
+            {(() => {
+              const buildHref = (p: number) => {
+                const sp = new URLSearchParams();
+                if (params.q) sp.set("q", params.q);
+                if (params.estado) sp.set("estado", params.estado);
+                if (params.sortBy) sp.set("sortBy", params.sortBy);
+                if (params.sortDir) sp.set("sortDir", params.sortDir);
+                sp.set("pagina", String(p));
+                return `/admin/socios?${sp.toString()}`;
+              };
+              const linkClass = (p: number) => `px-3 py-1 rounded-md border text-sm ${
+                p === pagina ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 hover:bg-gray-50"
+              }`;
+              const pages: (number | "...")[] = [];
+              for (let p = 1; p <= totalPaginas; p++) {
+                if (p === 1 || p === totalPaginas || (p >= pagina - 2 && p <= pagina + 2)) {
+                  pages.push(p);
+                } else if (pages[pages.length - 1] !== "...") {
+                  pages.push("...");
+                }
+              }
+              return pages.map((p, i) =>
+                p === "..." ? (
+                  <span key={`ellipsis-${i}`} className="px-2 text-gray-400">…</span>
+                ) : (
+                  <Link key={p} href={buildHref(p)} className={linkClass(p)}>{p}</Link>
+                )
               );
-            })}
+            })()}
           </div>
         </div>
       )}

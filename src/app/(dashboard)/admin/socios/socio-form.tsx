@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { ESTADOS_SOCIO } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 
 interface SocioData {
@@ -33,6 +34,7 @@ export default function SocioForm({ action, defaultValues = {}, isEdit = false }
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [linkWarning, setLinkWarning] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const EMAIL_DOMAINS = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com", "live.com", "otro"];
@@ -43,18 +45,7 @@ export default function SocioForm({ action, defaultValues = {}, isEdit = false }
   const defaultDomain = defaultAtIndex !== -1 ? defaultEmail.slice(defaultAtIndex + 1) : EMAIL_DOMAINS[0];
   const isKnownDomain = EMAIL_DOMAINS.includes(defaultDomain);
 
-  const ESTADOS = [
-    "En trámite",
-    "Activo",
-    "Activo en libro - sin epicrisis",
-    "Activo no incluído en libro",
-    "Baja por falta de diplomatura",
-    "Baja por vinculación con tercero",
-    "Baja - otro",
-    "No viene más",
-    "Anulado",
-    "Otro",
-  ];
+  const ESTADOS = [...ESTADOS_SOCIO, "Otro"];
 
   const defaultEstado = defaultValues.estado ?? "En trámite";
   const isKnownEstado = ESTADOS.includes(defaultEstado);
@@ -73,6 +64,7 @@ export default function SocioForm({ action, defaultValues = {}, isEdit = false }
     setError("");
     setSuccess("");
     setInviteLink(null);
+    setLinkWarning(null);
     setCopied(false);
     setLoading(true);
     try {
@@ -87,6 +79,7 @@ export default function SocioForm({ action, defaultValues = {}, isEdit = false }
         } else {
           setSuccess("Socio creado correctamente.");
           setInviteLink(result.inviteLink ?? null);
+          setLinkWarning("linkWarning" in result ? result.linkWarning ?? null : null);
           setLoading(false);
         }
       }

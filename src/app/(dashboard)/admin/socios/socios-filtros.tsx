@@ -2,18 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-
-const ESTADOS = [
-  "En trámite",
-  "Activo",
-  "Activo en libro - sin epicrisis",
-  "Activo no incluído en libro",
-  "Baja por falta de diplomatura",
-  "Baja por vinculación con tercero",
-  "Baja - otro",
-  "No viene más",
-  "Anulado",
-];
+import { ESTADOS_SOCIO } from "@/lib/constants";
 
 export default function SociosFiltros({
   defaultQ,
@@ -66,7 +55,7 @@ export default function SociosFiltros({
         className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       >
         <option value="">Todos los estados</option>
-        {ESTADOS.map((e) => (
+        {ESTADOS_SOCIO.map((e) => (
           <option key={e} value={e}>{e}</option>
         ))}
       </select>

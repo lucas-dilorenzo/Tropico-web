@@ -165,7 +165,7 @@ export async function crearSocio(formData: FormData) {
 
   if (linkError) {
     // Socio fue creado igual, solo falló la generación del link
-    return { success: true, inviteLink: null };
+    return { success: true, inviteLink: null, linkWarning: "El socio fue creado pero no se pudo generar el link de invitación. Usá 'Reset clave' desde el listado para generarlo." };
   }
 
   return { success: true, inviteLink: linkData.properties.action_link };
