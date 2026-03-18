@@ -23,6 +23,42 @@ export default async function InicioPage() {
   const leidos = new Set((reads ?? []).map((r) => r.post_id));
   const noLeidos = (posts ?? []).filter((p) => !leidos.has(p.id)).length;
 
+  const { data: profile } = await supabase
+    .from("users")
+    .select("nombre, role")
+    .eq("id", user.id)
+    .single();
+
+  const isAdmin = profile?.role === "admin";
+
+  if (isAdmin) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-2xl font-semibold mb-8">
+          Bienvenido{profile?.nombre ? `, ${profile.nombre}` : ""}
+        </h1>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <Link
+            href="/admin/socios"
+            className="bg-white border rounded-lg p-5 hover:shadow-sm hover:border-blue-300 transition-all"
+          >
+            <p className="text-2xl mb-2">👥</p>
+            <p className="font-medium text-sm">Socios</p>
+            <p className="text-xs text-gray-500 mt-0.5">Gestionar socios</p>
+          </Link>
+          <Link
+            href="/admin/noticias"
+            className="bg-white border rounded-lg p-5 hover:shadow-sm hover:border-blue-300 transition-all"
+          >
+            <p className="text-2xl mb-2">📰</p>
+            <p className="font-medium text-sm">Noticias</p>
+            <p className="text-xs text-gray-500 mt-0.5">Publicar contenido</p>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
