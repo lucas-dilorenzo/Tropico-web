@@ -33,6 +33,9 @@ export default async function DashboardLayout({
             <Link href="/inicio" className="text-gray-600 hover:text-gray-900">
               Inicio
             </Link>
+            <Link href="/noticias" className="text-gray-600 hover:text-gray-900">
+              Noticias
+            </Link>
             <Link href="/catalogo" className="text-gray-600 hover:text-gray-900">
               Catálogo
             </Link>
@@ -46,6 +49,9 @@ export default async function DashboardLayout({
                 </Link>
                 <Link href="/admin/socios" className="text-gray-600 hover:text-gray-900 font-medium">
                   Socios
+                </Link>
+                <Link href="/admin/noticias" className="text-gray-600 hover:text-gray-900 font-medium">
+                  Noticias (admin)
                 </Link>
               </>
             )}
