@@ -33,11 +33,6 @@ export default async function DashboardLayout({
             <Link href="/inicio" className="text-gray-600 hover:text-gray-900">
               Inicio
             </Link>
-            {!isAdmin && (
-              <Link href="/noticias" className="text-gray-600 hover:text-gray-900">
-                Noticias
-              </Link>
-            )}
             <Link href="/catalogo" className="text-gray-600 hover:text-gray-900">
               Catálogo
             </Link>
